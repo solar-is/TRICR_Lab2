@@ -121,7 +121,7 @@ h1 {
     background: #025800;
 }
 
-.clear-session {
+.clear-cookie {
     display: inline-block;
     padding: 10px 30px;
     background: #b51101;
@@ -132,11 +132,11 @@ h1 {
     cursor: pointer;
 }
 
-.clear-session:hover {
+.clear-cookie:hover {
     background: #860c01;
 }
 
-.clear-session:active {
+.clear-cookie:active {
     background: #620b00;
 }
 

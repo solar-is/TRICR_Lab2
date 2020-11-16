@@ -26,7 +26,9 @@
 
                 <form id="form-id" class="selection">
                     <div class="x-select">
-                        <label class="selection-label">Выберите X</label>
+                        <label class="selection-label">Выберите X
+                            <span class="warning" data-validate="Выберите хотя бы одно значение X"></span>
+                        </label>
                         <% for (double i = -2; i <= 2; i += 0.5) { %>
                         <input class="inp-cbx-x" id="x<%=i%>" type="button" name="x" value="<%=i%>">
                         <% } %>
@@ -49,7 +51,7 @@
                         <% } %>
                     </div>
                     <input class="btn-submit" type="submit" value="Проверить">
-                    <div class="clear-session">Очистить таблицу</div>
+                    <div class="clear-cookie">Очистить таблицу</div>
                 </form>
 
                 <table class="results">
@@ -89,18 +91,18 @@
 <script type="text/javascript" src="jquery-3.4.1.min.js"></script>
 <script>
     $(document).ready(function () {
-        let lastX = '0';
+        let lastX = '';
 
         $('.inp-cbx-x').click(function () {
             lastX = this.id.substring(1);
-            $(this).css('color', 'red');
-        })
+            $('.x-select .warning').removeClass('icon-visible');
+        });
 
         $('#Y-select').on('focus', function () {
             $('.y-select .warning').removeClass('icon-visible');
         });
 
-        $('.clear-session').on('click', function () {
+        $('.clear-cookie').on('click', function () {
             $('.results tr:not(:first-child)').remove();
             $.post("/lab2", 'clearSession');
         });
@@ -112,6 +114,10 @@
         $('form').submit(function (e) {
             e.preventDefault();
 
+            let validX = false;
+            if (lastX !== '') {
+                validX = true;
+            }
             let validY = false;
             let validR = false;
             let yString = $('#Y-select').val().trim();
@@ -134,8 +140,11 @@
             if (!validR) {
                 $('.r-select .warning').addClass('icon-visible')
             }
+            if (!validX) {
+                $('.x-select .warning').addClass('icon-visible')
+            }
 
-            if (validY && validR) {
+            if (validY && validR && validX) {
                 const formData = $("#form-id").serializeArray();
                 formData.push({name: "x", value: lastX});
                 formData.push({name: "yStr", value: yStringWithoutComma});
