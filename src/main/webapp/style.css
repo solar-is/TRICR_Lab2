@@ -46,6 +46,11 @@ h1 {
     padding: 20px 100px;
 }
 
+tr.content {
+    display: block;
+    width: 1000px;
+}
+
 .content-wrapper {
     display: flex;
     flex-wrap: wrap;
