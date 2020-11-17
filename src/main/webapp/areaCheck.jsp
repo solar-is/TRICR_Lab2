@@ -25,11 +25,10 @@
                 </td>
                 <td><%= requestDetails.getR() %>
                 </td>
-                <td><%= requestDetails.isEntry() ? "Попадает" : "Не попадает" %>
-                </td>
+                <%= requestDetails.isEntry() ? "<td class=\"in\">Попадает</td>" : "<td class=\"out\">Не попадает</td>" %>
             </tr>
         </table>
     <% } %>
-<a class="to_main_page" href="/index.jsp">Go back to the main page</a>
+<a class="to_main_page" href="/index.jsp">To the main page</a>
 </body>
 </html>
