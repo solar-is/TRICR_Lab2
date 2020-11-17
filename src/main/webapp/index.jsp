@@ -146,7 +146,7 @@
                     data: formData,
                     dataType: "html",
                     success: function (data) {
-                        $('body').html(data);
+                        $('.content').html(data);
                     }
                 });
 
