@@ -75,8 +75,7 @@
                         </td>
                         <td><%= details.getR() %>
                         </td>
-                        <td><%= details.isEntry() ? "Попадает" : "Не попадает" %>
-                        </td>
+                        <%= details.isEntry() ? "<td class=\"in\">Попадает</td>" : "<td class=\"out\">Не попадает</td>" %>
                     </tr>
                     <%
                             }
@@ -156,7 +155,7 @@
                     data: formData,
                     dataType: "html",
                     success: function (data) {
-                        $('body').html(data);
+                        $('.content').html(data);
                     }
                 });
             }

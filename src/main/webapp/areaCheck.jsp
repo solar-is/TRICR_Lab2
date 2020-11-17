@@ -3,6 +3,7 @@
 <html>
 <head>
     <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
 <%
@@ -10,22 +11,25 @@
         <p>Nice try, mamkin hacker! Server side validation is still working, so please do valid requests.</p>
     <% } else {
         RequestDetails requestDetails = (RequestDetails) request.getAttribute("requestDetails"); %>
-        <p>
-            Your parameters:
-        </p>
-        <p>
-            X = <%= requestDetails.getX() %>
-        </p>
-        <p>
-            Y = <%= requestDetails.getY() %>
-        </p>
-        <p>
-            R = <%= requestDetails.getR() %>
-        </p>
-        <p>
-            <%= requestDetails.isEntry() ? "Congratulations! Your point is inside!" : "Unfortunately, your point is outside the area." %>
-        </p>
-    <% } request.removeAttribute("x");%>
-<a href="/index.jsp">Go back to main page</a>
+        <table class="results area-check-table">
+            <tr>
+                <th>X</th>
+                <th>Y</th>
+                <th>R</th>
+                <th>Попадание</th>
+            </tr>
+            <tr>
+                <td><%= requestDetails.getX() %>
+                </td>
+                <td><%= requestDetails.getY() %>
+                </td>
+                <td><%= requestDetails.getR() %>
+                </td>
+                <td><%= requestDetails.isEntry() ? "Попадает" : "Не попадает" %>
+                </td>
+            </tr>
+        </table>
+    <% } %>
+<a class="to_main_page" href="/index.jsp">Go back to the main page</a>
 </body>
 </html>
