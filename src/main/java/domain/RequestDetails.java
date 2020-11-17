@@ -6,9 +6,6 @@ public class RequestDetails {
     private int r;
     private boolean isEntry;
 
-    public RequestDetails() {
-    }
-
     public RequestDetails(double x, String y, int r, boolean isEntry) {
         this.x = x;
         this.y = y;

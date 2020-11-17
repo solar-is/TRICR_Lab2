@@ -55,6 +55,11 @@
                     <div class="clear-cookie">Очистить таблицу</div>
                 </form>
 
+                <%
+                    Object entriesObject = session.getAttribute("entries");
+                    if (entriesObject != null) {
+                %>
+
                 <table class="results">
                     <tr>
                         <th>X</th>
@@ -64,11 +69,10 @@
                     </tr>
 
                     <%
-                        Object entriesObject = session.getAttribute("entries");
-                        if (entriesObject != null) {
-                            List<RequestDetails> entries = (List<RequestDetails>) entriesObject;
-                            for (RequestDetails details : entries) {
+                        List<RequestDetails> entries = (List<RequestDetails>) entriesObject;
+                        for (RequestDetails details : entries) {
                     %>
+
                     <tr>
                         <td><%= details.getX() %>
                         </td>
@@ -78,6 +82,7 @@
                         </td>
                         <%= details.isEntry() ? "<td class=\"in\">Попадает</td>" : "<td class=\"out\">Не попадает</td>" %>
                     </tr>
+
                     <%
                             }
                         }
@@ -95,19 +100,18 @@
 
         const canvas = document.getElementById('canvasId'),
             context = canvas.getContext('2d');
-
         context.fillStyle = 'red';
 
         const base_image = new Image();
-        base_image.src = 'area.png';
+        base_image.src = './area.png';
         base_image.onload = function () {
             context.drawImage(base_image, 0, 0);
 
             let points = localStorage.getItem('points');
             let coordinatePairs = points.split(';');
-            for (var i = 0; i<coordinatePairs.length; ++i) {
+            for (let i = 0; i < coordinatePairs.length; ++i) {
                 let pair = coordinatePairs[i];
-                context.fillRect(parseFloat(pair.split(',')[0]), parseFloat(pair.split(',')[1]), 2,2);
+                context.fillRect(parseFloat(pair.split(',')[0]), parseFloat(pair.split(',')[1]), 2, 2);
             }
 
         };

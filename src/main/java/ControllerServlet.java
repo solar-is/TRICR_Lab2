@@ -8,7 +8,6 @@ public class ControllerServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("text/html");
-
         if (req.getParameter("clearSession") != null) {
             req.getSession().setAttribute("entries", null);
         }
