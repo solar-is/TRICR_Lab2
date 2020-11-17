@@ -91,6 +91,8 @@
 <script type="text/javascript" src="jquery-3.4.1.min.js"></script>
 <script>
     $(document).ready(function () {
+        $('.inp-cbx-x').css("background-color", "#6ba1e5");
+
         const canvas = document.getElementById('canvasId'),
             context = canvas.getContext('2d');
 
@@ -161,8 +163,12 @@
         let lastX = '';
 
         $('.inp-cbx-x').click(function () {
+            $('.inp-cbx-x').css("background-color", "#6ba1e5");
+            $('.inp-cbx-x').css("color", "#000000");
             lastX = this.id.substring(1);
             $('.x-select .warning').removeClass('icon-visible');
+            $(this).css("background-color", "#b51101");
+            $(this).css("color", "#ffffff");
         });
 
         $('#Y-select').on('focus', function () {
