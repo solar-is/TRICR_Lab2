@@ -4,7 +4,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <title>Lab 2 Просолович М.А. Тайц Ю.М.</title>
@@ -21,7 +22,7 @@
             <h1>Лабораторная работа №2</h1>
             <div class="content-wrapper">
                 <div class="area">
-                    <img src="area.png" alt="area">
+                    <canvas id="canvasId" width="200px" height="200px"></canvas>
                 </div>
 
                 <form id="form-id" class="selection">
@@ -90,6 +91,73 @@
 <script type="text/javascript" src="jquery-3.4.1.min.js"></script>
 <script>
     $(document).ready(function () {
+        const canvas = document.getElementById('canvasId'),
+            context = canvas.getContext('2d');
+
+        context.fillStyle = 'red';
+
+        const base_image = new Image();
+        base_image.src = 'area.png';
+        base_image.onload = function () {
+            context.drawImage(base_image, 0, 0);
+
+            let points = localStorage.getItem('points');
+            let coordinatePairs = points.split(';');
+            for (var i = 0; i<coordinatePairs.length; ++i) {
+                let pair = coordinatePairs[i];
+                context.fillRect(parseFloat(pair.split(',')[0]), parseFloat(pair.split(',')[1]), 2,2);
+            }
+
+        };
+
+        function checkClick(canvas, event) {
+            let rect = canvas.getBoundingClientRect();
+            let x = event.clientX - rect.left - 100;
+            let y = -(event.clientY - rect.top - 100);
+
+            if ($('.inp-cbx-r:checked').length === 0) {
+                alert("Невозможно определить координаты точки, так как не задан радиус!")
+            } else {
+                let rVal = $('.inp-cbx-r:checked').val();
+                const rPixels = 80;
+
+                const realX = x * rVal / rPixels;
+                const realY = y * rVal / rPixels;
+
+                const point = (event.clientX - rect.left) + "," + (event.clientY - rect.top);
+                let points = localStorage.getItem('points');
+                if (points) {
+                    points += ";" + point;
+                } else {
+                    points = point;
+                }
+                localStorage.setItem('points', points);
+
+                const formData = $("#form-id").serializeArray();
+                formData.push({name: "x", value: realX});
+                formData.push({name: "yStr", value: realY});
+                formData.push({name: "yVal", value: realY});
+                formData.push({name: "r", value: rVal});
+                formData.push({name: "onlyDefaultValidation", value: true});
+
+                $.ajax({
+                    type: "POST",
+                    url: "/lab2",
+                    data: formData,
+                    dataType: "html",
+                    success: function (data) {
+                        $('body').html(data);
+                    }
+                });
+
+            }
+
+        }
+
+        canvas.addEventListener("mousedown", function (e) {
+            checkClick(canvas, e);
+        });
+
         let lastX = '';
 
         $('.inp-cbx-x').click(function () {
@@ -103,7 +171,9 @@
 
         $('.clear-cookie').on('click', function () {
             $('.results tr:not(:first-child)').remove();
+            localStorage.clear();
             $.post("/lab2", 'clearSession');
+            location.reload();
         });
 
         $('.inp-cbx-r').on('click', function () {

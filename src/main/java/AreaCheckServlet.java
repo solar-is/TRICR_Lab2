@@ -31,11 +31,16 @@ public class AreaCheckServlet extends HttpServlet {
             parsedSuccessfully = false;
         }
 
-        if (!parsedSuccessfully || !isValid(xReal, yReal, rReal)) {
+        String onlyDefaultValidation = req.getParameter("onlyDefaultValidation");
+
+        boolean isValid = isValid(xReal, yReal, rReal);
+
+        if ((onlyDefaultValidation != null && !parsedSuccessfully) ||
+                (onlyDefaultValidation == null && (!parsedSuccessfully || !isValid))){
             req.getRequestDispatcher("/areaCheck.jsp").forward(req, resp);
         }
-
         boolean isEntry = isEntry(xReal, yReal, rReal);
+        yStr = yStr.substring(0, Math.min(30, yStr.length()));
         RequestDetails requestDetails = new RequestDetails(xReal, yStr, (int) rReal, isEntry);
 
         HttpSession session = req.getSession();
