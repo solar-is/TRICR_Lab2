@@ -55,11 +55,6 @@
                     <div class="clear-cookie">Очистить таблицу</div>
                 </form>
 
-                <%
-                    Object entriesObject = session.getAttribute("entries");
-                    if (entriesObject != null) {
-                %>
-
                 <table class="results">
                     <tr>
                         <th>X</th>
@@ -69,8 +64,10 @@
                     </tr>
 
                     <%
-                        List<RequestDetails> entries = (List<RequestDetails>) entriesObject;
-                        for (RequestDetails details : entries) {
+                        Object entriesObject = session.getAttribute("entries");
+                        if (entriesObject != null) {
+                            List<RequestDetails> entries = (List<RequestDetails>) entriesObject;
+                            for (RequestDetails details : entries) {
                     %>
 
                     <tr>
@@ -87,8 +84,8 @@
                             }
                         }
                     %>
-
                 </table>
+
             </div>
         </td>
     </tr>
@@ -98,46 +95,56 @@
     $(document).ready(function () {
         $('.inp-cbx-x').css("background-color", "#6ba1e5");
 
-        const canvas = document.getElementById('canvasId'),
-            context = canvas.getContext('2d');
-        context.fillStyle = 'red';
+        const xCenter = 125;
+        const yCenter = 125;
 
-        const base_image = new Image();
-        base_image.src = './area.png';
-        base_image.onload = function () {
-            context.drawImage(base_image, 0, 0);
+        const xMax = 1;
+        const yMax = 1;
 
-            let points = localStorage.getItem('points');
-            let coordinatePairs = points.split(';');
-            for (let i = 0; i < coordinatePairs.length; ++i) {
-                let pair = coordinatePairs[i];
-                context.fillRect(parseFloat(pair.split(',')[0]), parseFloat(pair.split(',')[1]), 2, 2);
-            }
+        const xScale = xCenter / (xMax + 0.5);
+        const yScale = yCenter / (yMax + 0.5);
 
-        };
+        const xOffset = xCenter + 0.5;
+        const yOffset = yCenter + 0.5;
 
-        function checkClick(canvas, event) {
+        let canvas = document.getElementById('canvasId');
+        if (canvas.getContext) {
+            canvas.height = yCenter * 2;
+            canvas.width = xCenter * 2;
+            let context = canvas.getContext("2d");
+            drawAxes(context);
+            drawAreas(context);
+            <%
+                if (entriesObject != null) {
+                    List<RequestDetails> entries = (List<RequestDetails>) entriesObject;
+                    for (RequestDetails requestDetails : entries) {
+                        double x = (125 / 1.5) * (requestDetails.getX() / requestDetails.getR()) + 125;
+                        double y = - (125 / 1.5) * (requestDetails.getY() / requestDetails.getR()) + 125;
+                    %>
+                        context.fillStyle = '#000000';
+                        context.fillRect(<%=x%>, <%=y%>, 3, 3);
+                    <%
+                    }
+                }
+            %>
+        }
+
+        canvas.addEventListener("mousedown", function (e) {
+            canvasClickListener(canvas, e);
+        });
+
+        function canvasClickListener(canvas, event) {
             let rect = canvas.getBoundingClientRect();
-            let x = event.clientX - rect.left - 100;
-            let y = -(event.clientY - rect.top - 100);
+            let x = event.clientX - rect.left - xCenter;
+            let y = -(event.clientY - rect.top - yCenter);
 
             if ($('.inp-cbx-r:checked').length === 0) {
                 alert("Невозможно определить координаты точки, так как не задан радиус!")
             } else {
                 let rVal = $('.inp-cbx-r:checked').val();
-                const rPixels = 80;
 
-                const realX = x * rVal / rPixels;
-                const realY = y * rVal / rPixels;
-
-                const point = (event.clientX - rect.left) + "," + (event.clientY - rect.top);
-                let points = localStorage.getItem('points');
-                if (points) {
-                    points += ";" + point;
-                } else {
-                    points = point;
-                }
-                localStorage.setItem('points', points);
+                const realX = x * rVal / xScale;
+                const realY = y * rVal / yScale;
 
                 const formData = $("#form-id").serializeArray();
                 formData.push({name: "x", value: realX});
@@ -145,24 +152,9 @@
                 formData.push({name: "yVal", value: realY});
                 formData.push({name: "r", value: rVal});
                 formData.push({name: "onlyDefaultValidation", value: true});
-
-                $.ajax({
-                    type: "POST",
-                    url: "/lab2",
-                    data: formData,
-                    dataType: "html",
-                    success: function (data) {
-                        $('.content').html(data);
-                    }
-                });
-
+                doRequest(formData);
             }
-
         }
-
-        canvas.addEventListener("mousedown", function (e) {
-            checkClick(canvas, e);
-        });
 
         let lastX = '';
 
@@ -181,18 +173,42 @@
 
         $('.clear-cookie').on('click', function () {
             $('.results tr:not(:first-child)').remove();
-            localStorage.clear();
             $.post("/lab2", 'clearSession');
             location.reload();
         });
 
         $('.inp-cbx-r').on('click', function () {
             $('.r-select .warning').removeClass('icon-visible');
+            let rVal = this.value;
+            if (rVal) {
+                let context = canvas.getContext("2d");
+                <%
+                    if (entriesObject != null) {
+                        List<RequestDetails> entries = (List<RequestDetails>) entriesObject;
+                        for (RequestDetails requestDetails : entries) {
+                            int r = requestDetails.getR();
+                            double x = (125 / 1.5) * (requestDetails.getX() / r) + 125;
+                            double y = - (125 / 1.5) * (requestDetails.getY() / r) + 125;
+                        %>
+                            if (rVal === '<%=r%>') {
+                                if (<%=requestDetails.isEntry()%>) {
+                                    context.fillStyle = '#00ff00';
+                                } else {
+                                    context.fillStyle = '#ff0000';
+                                }
+                            } else {
+                                context.fillStyle = '#000000';
+                            }
+                            context.fillRect(<%=x%>, <%=y%>, 3, 3);
+                        <%
+                        }
+                    }
+                %>
+            }
         });
 
         $('form').submit(function (e) {
             e.preventDefault();
-
             let validX = false;
             if (lastX !== '') {
                 validX = true;
@@ -229,17 +245,142 @@
                 formData.push({name: "yStr", value: yStringWithoutComma});
                 formData.push({name: "yVal", value: yVal});
 
-                $.ajax({
-                    type: "POST",
-                    url: "/lab2",
-                    data: formData,
-                    dataType: "html",
-                    success: function (data) {
-                        $('.content').html(data);
-                    }
-                });
+                doRequest(formData);
             }
+
         });
+
+        function doRequest(data) {
+            $.ajax({
+                type: "POST",
+                url: "/lab2",
+                data: data,
+                dataType: "html",
+                success: function () {
+                    location.reload();
+                }
+            });
+        }
+
+        function drawAxes(ctx) {
+            ctx.font = "14px serif";
+            ctx.strokeText('Y', xCenter + 10, 15);
+            ctx.strokeText('X', xCenter * 2 - 10, yCenter - 10);
+
+            ctx.font = "12px serif";
+            ctx.lineWidth = 1;
+
+            // draw x-axis
+            ctx.beginPath();
+            ctx.moveTo(0, yOffset);
+            ctx.lineTo(xCenter * 2, yOffset);
+            ctx.stroke();
+            ctx.closePath();
+
+            // draw arrow
+            ctx.beginPath();
+            ctx.moveTo(xCenter * 2 + 0.5, yCenter + 0.5);
+            ctx.lineTo(xCenter * 2 + 0.5 - 8, yCenter + 0.5 - 3);
+            ctx.lineTo(xCenter * 2 + 0.5 - 8, yCenter + 0.5 + 3);
+            ctx.stroke();
+            ctx.closePath();
+            ctx.fill();
+
+            // draw x values
+            let j = -xMax;
+            while (j <= xMax) {
+                let x = j * xScale;
+                ctx.strokeStyle = '#aaa';
+                ctx.beginPath();
+                ctx.moveTo(x + xOffset, yOffset);
+                ctx.lineTo(x + xOffset, yOffset - 5);
+                ctx.stroke();
+                ctx.closePath();
+
+                ctx.strokeStyle = '#666';
+                ctx.strokeText(j === 1 || j === -1 ? 'R' : 'R/2', x + xOffset - 5, yOffset - 10);
+
+                j += 0.5;
+                if (j === 0) {
+                    j += 0.5;
+                }
+            }
+
+            // draw y-axis
+            ctx.beginPath();
+            ctx.moveTo(xOffset, 0);
+            ctx.lineTo(xOffset, yCenter * 2);
+            ctx.stroke();
+            ctx.closePath();
+
+            // draw arrow
+            ctx.beginPath();
+            ctx.moveTo(xCenter + 0.5, 0.5);
+            ctx.lineTo(xCenter + 0.5 - 3, 0.5 + 8);
+            ctx.lineTo(xCenter + 0.5 + 3, 0.5 + 8);
+            ctx.stroke();
+            ctx.closePath();
+            ctx.fill();
+
+            // draw y values
+            j = -yMax;
+            while (j <= yMax) {
+                let y = j * yScale;
+                ctx.strokeStyle = '#aaa';
+                ctx.beginPath();
+                ctx.moveTo(xOffset, y + yOffset);
+                ctx.lineTo(xOffset + 5, y + yOffset);
+                ctx.stroke();
+                ctx.closePath();
+
+                ctx.strokeStyle = '#666';
+                ctx.strokeText(j === 1 || j === -1 ? 'R' : 'R/2', xOffset + 10, y + yOffset + 5);
+
+                j += 0.5;
+                if (j === 0) {
+                    j += 0.5;
+                }
+            }
+        }
+
+        function offsetX(v) {
+            return xOffset + (v * xScale);
+        }
+
+        function offsetY(v) {
+            return yOffset - (v * yScale);
+        }
+
+        function drawAreas(ctx) {
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.5;
+            ctx.strokeStyle = '#0257b6';
+            ctx.fillStyle = '#0257b6';
+
+            // triangle
+            ctx.beginPath();
+            ctx.moveTo(offsetX(0), offsetY(0));
+            ctx.lineTo(offsetX(1), offsetY(0));
+            ctx.lineTo(offsetX(0), offsetY(-0.5));
+            ctx.fill();
+            ctx.closePath();
+
+            // rectangle
+            ctx.beginPath();
+            ctx.moveTo(offsetX(0), offsetY(0));
+            ctx.lineTo(offsetX(0), offsetY(0.5));
+            ctx.lineTo(offsetX(-1), offsetY(0.5));
+            ctx.lineTo(offsetX(-1), offsetY(0));
+            ctx.fill();
+            ctx.closePath();
+
+            // circle
+            ctx.beginPath();
+            ctx.moveTo(offsetX(0), offsetY(0));
+            ctx.arc(offsetX(0), offsetY(0), offsetX(1) - offsetX(0), Math.PI, Math.PI / 2, true);
+            ctx.fill();
+            ctx.closePath();
+        }
     });
 </script>
 </body>

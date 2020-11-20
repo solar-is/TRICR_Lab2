@@ -1,12 +1,12 @@
 package domain;
 
 public class RequestDetails {
-    private double x;
-    private String y;
-    private int r;
-    private boolean isEntry;
+    private final double x;
+    private final double y;
+    private final int r;
+    private final boolean isEntry;
 
-    public RequestDetails(double x, String y, int r, boolean isEntry) {
+    public RequestDetails(double x, double y, int r, boolean isEntry) {
         this.x = x;
         this.y = y;
         this.r = r;
@@ -17,31 +17,15 @@ public class RequestDetails {
         return x;
     }
 
-    public void setX(double x) {
-        this.x = x;
-    }
-
-    public String getY() {
+    public double getY() {
         return y;
-    }
-
-    public void setY(String y) {
-        this.y = y;
     }
 
     public int getR() {
         return r;
     }
 
-    public void setR(int r) {
-        this.r = r;
-    }
-
     public boolean isEntry() {
         return isEntry;
-    }
-
-    public void setEntry(boolean entry) {
-        isEntry = entry;
     }
 }

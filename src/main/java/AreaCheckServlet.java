@@ -15,7 +15,6 @@ public class AreaCheckServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String x = req.getParameter("x");
-        String yStr = req.getParameter("yStr");
         String yVal = req.getParameter("yVal");
         String r = req.getParameter("r");
 
@@ -40,8 +39,8 @@ public class AreaCheckServlet extends HttpServlet {
             req.getRequestDispatcher("/areaCheck.jsp").forward(req, resp);
         }
         boolean isEntry = isEntry(xReal, yReal, rReal);
-        yStr = yStr.substring(0, Math.min(30, yStr.length()));
-        RequestDetails requestDetails = new RequestDetails(xReal, yStr, (int) rReal, isEntry);
+
+        RequestDetails requestDetails = new RequestDetails(xReal, yReal, (int) rReal, isEntry);
 
         HttpSession session = req.getSession();
         Object entriesObject = session.getAttribute("entries");
@@ -52,7 +51,6 @@ public class AreaCheckServlet extends HttpServlet {
             entries = new ArrayList<>();
         }
         entries.add(requestDetails);
-
         session.setAttribute("entries", entries);
 
         req.setAttribute("requestDetails", requestDetails);
